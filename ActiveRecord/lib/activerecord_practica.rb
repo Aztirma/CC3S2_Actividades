@@ -55,8 +55,9 @@ class Customer < ActiveRecord::Base
 
   # Consulta para encontrar los 20 clientes más jóvenes, en cualquier orden
   def self.twenty_youngest
-    order(:birthdate).limit(20)
+    order(birthdate: :desc).limit(20)
   end
+  
 
   # Actualiza la fecha de nacimiento de Gussie Murray hasta el 8 de febrero de 2004
   def self.update_gussie_murray_birthdate
@@ -76,6 +77,6 @@ class Customer < ActiveRecord::Base
 
   # Elimina todos los clientes nacidos el 31 de diciembre de 1977 de la base de datos
   def self.delete_everyone_born_before_1978
-    where(birthdate: Time.parse('1977-12-31')).destroy_all
-  end
-end
+    where("birthdate < ?", "1978-01-01").destroy_all
+  end  
+end  
