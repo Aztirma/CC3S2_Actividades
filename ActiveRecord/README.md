@@ -72,4 +72,11 @@ Cuando hemos completado el código correctamente y la prueba pasa, el nombre de 
 
 Continuamos este proceso para cada caso de prueba, completando las consultas de ActiveRecord según las instrucciones de cada uno.
 
+![Alt text](image.png)
+
+
+
+
+Continuamos trabajando en cada caso de prueba hasta que todas las pruebas hayan pasado con éxito. Deberíamos ver el nombre de cada ejemplo pasado en verde.
+
 ![Alt text](<Imagenes/Untitled 12.png>)
