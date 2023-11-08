@@ -81,7 +81,7 @@ En este caso la aplicación se ejecuta pero tiene un resultado o comportamiento 
   Al agregar logger.debug("Mostrando mensaje en el logger") en el método show del controlador MoviesController, se registra un mensaje de depuración en el archivo de registro de la aplicación.  
   Nos pide comparar config/environments/production.rb con development.rb para ver cómo difieren los niveles logs por defecto entre los entornos de producción y desarrollo.
 
-  Dentro del entorno de production tenemos el siguiente fragmento:
+  Por ejemplo dentro del entorno de production se puede observar el siguiente fragmento que establece el formato predeterminado para el registro y la posibilidad de enviar registros a la salida estándar si la variable de entorno RAILS_LOG_TO_STDOUT está presente.
   ```ruby
     # Use default logging formatter so that PID and timestamp are not suppressed.
     config.log_formatter = ::Logger::Formatter.new
