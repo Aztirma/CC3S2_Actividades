@@ -14,35 +14,107 @@ end
 %h1= @movie.title
 -# will give "undefined method 'title' for nil:NilClass" if @movie is nil
 ```
-- Pregunta (Ask) Si estás en un entorno de trabajo de "puestos no asignados", o tiene activada la mensajería instantánea, distribuye el mensaje ahí fuera.
-- Busca (Search) el mensaje de error. Te sorprenderías las veces que los desarrolladores con experiencia se enfrentan a un error buscando en un motor de búsqueda como Google
-palabras clave o frases clave del mensaje de error. También puedes buscar en sitios como StackOverflow , que se especializan en ayudar a los desarrolladores y te permiten votar las
-respuestas más útiles a una pregunta particular, para que eventualmente vayan pasando a la parte más alta de la lista de respuestas.
+- Pregunta (Ask) Si estamos en un entorno de trabajo de "puestos no asignados", o tiene activada la mensajería instantánea, distribuye el mensaje ahí fuera.
 
-- Postea (Post) una pregunta a uno de esos sitios si todo lo demás falla. Selo más específico posible acerca de lo que fue mal, cuál es tu entorno y cómo reproducir el problema:
-  - Vago: "La gema sinatra no funciona en mi sistema". No hay suficiente información aquí para que alguien pueda ayudarte.
-  - Mejor, pero irritante: "La gema sinatra no funciona en mi sistema. Adjunto el mensaje de error de 85 líneas”. Los otros desarrolladores están tan ocupados como tu y probablemente no van a perder tiempo extrayendo la información relevante de esa traza tan larga.
-- Lo mejor: Mira la transcripción real de esta pregunta en StackOverflow. A las 6:02pm, el desarrollador ofreció información específica, como el nombre y la versión de su sistema operativo, los comandos específicos que ejecutó satisfactoriamente, y el error inesperado que obtuvo. Otras voces serviciales le preguntaron información adicional específica y sobre las 7:10pm, dos de las respuestas habían identificado el problema.
+- Busca (Search): Buscamos el error presentado en diferentes motores de busqueda utilizando palabras clave o el mensaje de error.
 
- Aquí hay algunas cosas que se pueden intentar si la aplicación se detiene:
+- Postea (Post) una pregunta a uno de esos sitios si todo lo demás falla. Selo más específico posible acerca de lo que fue mal, cuál es tu entorno y cómo reproducir el problema
+ 
+ Otras medidas que se puede optar realizar si la aplicación se detiene es mirar el `log file` por lo general `log/development.log`, para obtener una información más completa del error, incluyendo la traza.  
 
-- Aprovechar la indentación automática y el marcado de sintaxis.
-- Mira el `log file` por lo general `log/development.log`, para obtener una información más completa del error, incluyendo la traza. En las aplicaciones en producción, ésta suele ser la unica alternativa, porque las aplicaciones Rails en modo producción están configuradas para mostrar una página de error más amigable de cara al usuario, en vez de mostrar la traza del error que verías si éste ocurriese en modo desarrollo.
+## Segundo tipo de problema 
+En este caso la aplicación se ejecuta pero tiene un resultado o comportamiento incorrecto. Para depurar este tipo de problema se realizan diferentes enfoques, uno de ellos puede ser los siguientes:
 
-En el segundo tipo de problema, la aplicación se ejecuta pero tiene un resultado o comportamiento incorrecto. Muchos desarrolladores usan la combinación de dos enfoques para depurar este tipo de problemas. El primero es insertar sentencias extra de instrumentación para registrar valores de variables importantes en varios puntos durante la ejecución de programa. Hay varios lugares donde podemos instrumentar una aplicación SaaS en Rails. Prueba cada uno  para experimentar cómo funcionan:
 
-- Muestra la descripción detallada de un objeto en una vista. Por ejemplo, pruebA a insertar `= debug(@movie)` o `= @movie.inspect` en cualquier vista (donde el signo
+- Mostrar la descripción detallada de un objeto en una vista. Por ejemplo, probaremos a insertar `= debug(@movie)` o `= @movie.inspect` en cualquier vista (donde el signo
 `=` le dice a Haml que ejecute el código e inserta el resultado en la vista).
-- Detien la ejecución dentro de un método de un controlador lanzando una excepción cuyo mensaje sea una representación del valor que quieres inspeccionar, por ejemplo, `raise params.inspect`
-- Para ver el valor detallado de la hash `params` dentro del método de un controlador. Rails desplegará el mensaje de la excepción como la página web resultante de la petición.
-- Usa `logger.debug( mensaje)` para imprimir el mensaje al fichero de logging. `logger` está disponible en los modelos y en los controladores y puede registrar mensajes con
-distintos niveles de importancia. Compara `config/environments/production.rb` con `development.rb` para ver cómo difieren los niveles logs por defecto entre
-los entornos de producción y desarrollo.
 
-La segunda forma de depurar los problemas es con un depurador interactivo. 
-Instala la gema `debugger` a través de Gemfile, para usar el depurador en una aplicación Rails. 
 
-Arranca el servidor de la aplicación usando  `rails server --debugger`, e inserta la sentencia `debugger` en un punto del código donde desees y detiene el programa. Cuando
-llegas a esa sentencia, la ventana del terminal donde arrancó el servidor te dará el prompt del depurador. 
+  ``` ruby
+  -# in app/views/movies/show.html.haml
 
-Realiza esto.
+  %h2 Details about #{@movie.title}
+
+  %ul#details
+    %li
+      Rating:
+      = @movie.rating
+    %li
+      Released on:
+      = @movie.release_date.strftime("%B %d, %Y")
+
+  %h3 Description:
+  = link_to 'Edit info', edit_movie_path(@movie)
+  = link_to 'Back to movie list', movies_path
+
+
+  = debug(@movie)
+  = @movie.inspect
+  ```
+  Cuando se añaden las líneas = debug(@movie) y = @movie.inspect en la vista de la aplicación, se obtiene información detallada sobre el objeto @movie. La primera línea mostrará esta información en la consola del servidor de Rails, lo que les permitirá analizar los atributos y valores del objeto durante la interacción con la página. La segunda línea mostrará la representación del objeto directamente en la vista web, facilitando la visualización de los datos sin necesidad de acceder a la consola del servidor. 
+
+
+- Detener la ejecución dentro de un método de un controlador lanzando una excepción cuyo mensaje sea una representación del valor que quieres inspeccionar, por ejemplo, `raise params.inspect`
+
+  
+  Dentro de MoviesController
+  ``` ruby
+  def show
+      id = params[:id] 
+      @movie = Movie.find(id) 
+      raise @movie.inspect
+
+  ```
+
+  Al detener la ejecución dentro de un método de un controlador en Ruby on Rails mediante el lanzamiento de una excepción con un mensaje que es una representación del valor deseado, como en raise @movie.inspect, se interrumpe el flujo del programa y se muestra una página de error en el navegador. El mensaje de la excepción contiene una representación detallada del objeto que se quiere inspeccionar, en este caso, la variable @movie, lo que facilita la depuración al visualizar sus atributos y valores en la página de error para identificar problemas en el controlador
+
+
+- Podemos usar `logger.debug( mensaje)` para imprimir el mensaje al fichero de logging. `logger` está disponible en los modelos y en los controladores y puede registrar mensajes con distintos niveles de importancia. 
+
+  Dentro de MoviesController
+  ```ruby
+  def show
+      id = params[:id] 
+      @movie = Movie.find(id)
+      logger.debug("Mostrando mensaje en el logger")
+  ```
+  Al agregar logger.debug("Mostrando mensaje en el logger") en el método show del controlador MoviesController, se registra un mensaje de depuración en el archivo de registro de la aplicación.  
+  Nos pide comparar config/environments/production.rb con development.rb para ver cómo difieren los niveles logs por defecto entre los entornos de producción y desarrollo.
+
+  Dentro del entorno de production tenemos el siguiente fragmento:
+  ```ruby
+    # Use default logging formatter so that PID and timestamp are not suppressed.
+    config.log_formatter = ::Logger::Formatter.new
+
+    # Use a different logger for distributed setups.
+    # require "syslog/logger"
+    # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new "app-name")
+
+    if ENV["RAILS_LOG_TO_STDOUT"].present?
+      logger           = ActiveSupport::Logger.new(STDOUT)
+      logger.formatter = config.log_formatter
+      config.logger    = ActiveSupport::TaggedLogging.new(logger)
+    end
+  ```
+
+  Mientras que el entorno de desarrollo captura los deprecation messages:
+  ```ruby
+    # Print deprecation notices to the Rails logger.
+    config.active_support.deprecation = :log
+  ```
+
+La segunda forma de depurar los problemas es con un depurador interactivo. Procedemos a instalarla la gema `debug` utilizando el comando `gem install debug`.
+
+Editamos el siguiente fragmento de código en MoviesController:
+```ruby
+  def show    
+    id = params[:id] # retrieve movie ID from URI route
+    @movie = Movie.find(id) # look up movie by unique ID
+    debugger
+    # will render render app/views/movies/show.html.haml by default
+  end
+```
+Cuando iniciamos el servidor con rails server, esta línea detiene la ejecución en ese punto y abre un entorno de depuración interactivo. Desde aquí, podemos examinar variables y rastrear el flujo de la aplicación en tiempo real, lo que facilita la identificación y solución de problemas. 
+ 
+ 
+ 
