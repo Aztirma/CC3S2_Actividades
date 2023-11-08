@@ -51,7 +51,11 @@ En este caso la aplicación se ejecuta pero tiene un resultado o comportamiento 
   = debug(@movie)
   = @movie.inspect
   ```
-  Cuando se añaden las líneas = debug(@movie) y = @movie.inspect en la vista de la aplicación, se obtiene información detallada sobre el objeto @movie. La primera línea mostrará esta información en la consola del servidor de Rails, lo que les permitirá analizar los atributos y valores del objeto durante la interacción con la página. La segunda línea mostrará la representación del objeto directamente en la vista web, facilitando la visualización de los datos sin necesidad de acceder a la consola del servidor. 
+  Cuando se añaden las líneas = debug(@movie) y = @movie.inspect en la vista de la aplicación, se obtiene información detallada sobre el objeto @movie. 
+  ![Alt text](image.png)
+  La primera línea mostrará esta información en la consola del servidor de Rails, lo que les permitirá analizar los atributos y valores del objeto durante la interacción con la página. La segunda línea mostrará la representación del objeto directamente en la vista web, facilitando la visualización de los datos sin necesidad de acceder a la consola del servidor. 
+
+  ![Alt text](image-1.png)
 
 
 - Detener la ejecución dentro de un método de un controlador lanzando una excepción cuyo mensaje sea una representación del valor que quieres inspeccionar, por ejemplo, `raise params.inspect`
@@ -66,7 +70,14 @@ En este caso la aplicación se ejecuta pero tiene un resultado o comportamiento 
 
   ```
 
-  Al detener la ejecución dentro de un método de un controlador en Ruby on Rails mediante el lanzamiento de una excepción con un mensaje que es una representación del valor deseado, como en raise @movie.inspect, se interrumpe el flujo del programa y se muestra una página de error en el navegador. El mensaje de la excepción contiene una representación detallada del objeto que se quiere inspeccionar, en este caso, la variable @movie, lo que facilita la depuración al visualizar sus atributos y valores en la página de error para identificar problemas en el controlador
+  Al detener la ejecución dentro de un método de un controlador en Ruby on Rails mediante el lanzamiento de una excepción con un mensaje que es una representación del valor deseado, como en raise @movie.inspect, se interrumpe el flujo del programa y se muestra una página de error en el navegador, así como en consola.
+  
+  ![Alt text](image-2.png)
+  
+  ![Alt text](image-3.png)
+  El mensaje de la excepción contiene una representación detallada del objeto que se quiere inspeccionar, en este caso, la variable @movie, lo que facilita la depuración al visualizar sus atributos y valores en la página de error para identificar problemas en el controlador
+
+
 
 
 - Podemos usar `logger.debug( mensaje)` para imprimir el mensaje al fichero de logging. `logger` está disponible en los modelos y en los controladores y puede registrar mensajes con distintos niveles de importancia. 
@@ -76,12 +87,26 @@ En este caso la aplicación se ejecuta pero tiene un resultado o comportamiento 
   def show
       id = params[:id] 
       @movie = Movie.find(id)
-      logger.debug("Mostrando mensaje en el logger")
+      begin 
+        raise params.inspect
+      rescue => e
+        logger.debug("Exception found => #{e.message}")
+      end
+  end
   ```
-  Al agregar logger.debug("Mostrando mensaje en el logger") en el método show del controlador MoviesController, se registra un mensaje de depuración en el archivo de registro de la aplicación.  
+
+  Podemos observar en nuestra consola se maneja la excepcion correctamente 
+  ![Alt text](image-4.png)
+
+  Además al agregar logger.debug("Mostrando mensaje en el logger") en el método show del controlador MoviesController, se registra un mensaje de depuración en el archivo de registro de la aplicación.  
+
+  ![Alt text](image-5.png)
+ 
+
   Nos pide comparar config/environments/production.rb con development.rb para ver cómo difieren los niveles logs por defecto entre los entornos de producción y desarrollo.
 
-  Por ejemplo dentro del entorno de production se puede observar el siguiente fragmento que establece el formato predeterminado para el registro y la posibilidad de enviar registros a la salida estándar si la variable de entorno RAILS_LOG_TO_STDOUT está presente.
+  Por ejemplo dentro del entorno de production se puede observar el siguiente fragmento que establece el formato predeterminado para el registro y la posibilidad de enviar registros, usa el nivel :debug de logger ya que se necesita ver la mayor información posible.
+
   ```ruby
     # Use default logging formatter so that PID and timestamp are not suppressed.
     config.log_formatter = ::Logger::Formatter.new
@@ -97,13 +122,15 @@ En este caso la aplicación se ejecuta pero tiene un resultado o comportamiento 
     end
   ```
 
-  Mientras que el entorno de desarrollo captura los deprecation messages:
+  Mientras que el entorno de desarrollo captura los deprecation messages:, en este caso usa el nivel :info para solo mostrar logs informativos y superiores.
   ```ruby
     # Print deprecation notices to the Rails logger.
     config.active_support.deprecation = :log
   ```
 
 La segunda forma de depurar los problemas es con un depurador interactivo. Procedemos a instalarla la gema `debug` utilizando el comando `gem install debug`.
+
+![Alt text](image-6.png)
 
 Editamos el siguiente fragmento de código en MoviesController:
 ```ruby
@@ -116,5 +143,6 @@ Editamos el siguiente fragmento de código en MoviesController:
 ```
 Cuando iniciamos el servidor con rails server, esta línea detiene la ejecución en ese punto y abre un entorno de depuración interactivo. Desde aquí, podemos examinar variables y rastrear el flujo de la aplicación en tiempo real, lo que facilita la identificación y solución de problemas. 
  
+![Alt text](image-8.png)
  
  
