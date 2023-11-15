@@ -8,18 +8,20 @@ El código proporcionado inicialmente tiene algunos errores en la lógica del pr
 
 ### Errores Iniciales:
 
-Los primeros errores se encuentran en el archivo `app/controllers/application_controller.rb`, donde llamamos a un método de la clase `Moviegoer`, la cual no existe. Para corregir esto, cambiaremos la referencia a la clase `Movie`.
-
+Los primeros errores se encuentran en el archivo `app/controllers/application_controller.rb`, donde llamamos a un método de la clase `Moviegoer`, la cual no existe.
 Inicio del error:
 
 !![Alt text](image-1.png)
+Para corregir esto, cambiaremos la referencia a la clase `Movie`.
+  ![Alt text](image-2.png)
 Luego de cambiar por `Movie`:
+![Alt text](image-3.png)
+Vemos que el error ha cambiado, ahora enfrentamos un error de sintaxis. Este problema se encuentra en la carpeta `app/models`. 
+![Alt text](image-4.png)
 
-![Imagen](link_a_la_imagen) 
+Aquí, debemos quitar los comentarios y ejecutar nuevamente el servidor.
 
-Vemos que el error ha cambiado, ahora enfrentamos un error de sintaxis. Este problema se encuentra en la carpeta `app/models`. Aquí, debemos quitar los comentarios y ejecutar nuevamente el servidor.
-
-![Imagen](link_a_la_imagen)
+![Alt text](image-5.png)
 
 Ahora, el error ha sido corregido. Podemos visualizar las películas y alguna información adicional. Además, ahora podemos agregar nuevas películas.
 
@@ -27,7 +29,40 @@ Ahora, el error ha sido corregido. Podemos visualizar las películas y alguna in
 
 ### Vistas Parciales:
 
-Crea un directorio `_movies` en `app/views` para contener la vista parcial. Mueve el archivo `_movie.html.erb` a este directorio. Actualiza la línea `<%= render partial: 'movie', collection: @movies %>` para que coincida con la nueva ubicación.
+Una vista parcial es el nombre de Rails para una parte reutilizable de una vista. Cuando debe aparecer contenido similar en diferentes vistas.
+
+Según la actividad, nos sugiere , colocar ese contenido en una parte e “incluirlo” en archivos separados ayuda a DRY la repetición.
+
+Creamos el archivo `_movie.html.erb` en el directorio `app/views` e incluimos este fragmento de codigo, que actuara como una vsta parcial.
+
+``` html
+<div class="row">
+    <div class="col-8"> <%= link_to movie.title, movie_path(movie) %> </div>
+    <div class="col-2"> <%= movie.rating %> </div>
+    <div class="col-2"> <%= movie.release_date.strftime('%F') %> </div>
+</div>
+``` 
+
+Actualizamos la línea `<%= render partial: 'movie', collection: @movies %>` del archivo `index.html.haml ` para que coincida con la nueva ubicación.
+
+``` html
+<!--  ...other code from index.html.erb here... -->
+<div class="row bg-dark text-white">
+    <div class="col-6 text-center">Title and More Info</div>
+    <div class="col-2 text-center">Rating</div>
+    <div class="col-4 text-center">Release Date</div>
+</div>
+<%= render partial: 'movie', collection: @movies %>
+``` 
+
+También cambiaremos el formato de html.haml a html.erb del archivo anteriormente mencionado `index.html.haml `
+
+![Alt text](image-6.png)
+
+ 
+
+ 
+
 
 ### Validaciones de Modelos:
 
