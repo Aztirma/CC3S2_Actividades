@@ -57,24 +57,112 @@ Actualizamos la línea `<%= render partial: 'movie', collection: @movies %>` del
 
 También cambiaremos el formato de html.haml a html.erb del archivo anteriormente mencionado `index.html.haml `
 
-![Alt text](image-6.png)
+![Alt text](image-7.png)
 
- 
+Ahora si observamos que al ejecutar nuestro servidor, no hay ningun error y se pueden observar las tablas.
 
- 
+![Alt text](image-8.png)
 
 
 ### Validaciones de Modelos:
 
-Agrega el código de validación al modelo `Movie` que se proporciona. Verifica los resultados en la consola utilizando el código de ejemplo proporcionado.
+Las validaciones de modelos, al igual que las migraciones, se expresan en un mini-DSL integrado en Ruby, como muestra en el siguiente código.Agregamos el código de validación al modelo `Movie` que se proporciona.
+``` ruby
+class Movie < ActiveRecord::Base
+    def self.all_ratings ; %w[G PG PG-13 R NC-17] ; end #  shortcut: array of strings
+    validates :title, :presence => true
+    validates :release_date, :presence => true
+    validate :released_1930_or_later # uses custom validator below
+    validates :rating, :inclusion => {:in => Movie.all_ratings},
+        :unless => :grandfathered?
+    def released_1930_or_later
+        errors.add(:release_date, 'must be 1930 or later') if
+        release_date && release_date < Date.parse('1 Jan 1930')
+    end
+    @@grandfathered_date = Date.parse('1 Nov 1968')
+    def grandfathered?
+        release_date && release_date < @@grandfathered_date
+    end
+end
+``` 
+
+Verificamos los resultados en la consola utilizando el código de ejemplo proporcionado.
+
+![Alt text](image-9.png)
+
+
+Se creó una instancia llamada m de la clase Movie con un título vacío, un rating incorrecto y una fecha de lanzamiento anterior a 1930. Al ejecutar las validaciones, se obtuvo un resultado de false, indicando problemas de validación. Se generaron mensajes de error específicos para el título, señalando que no puede estar en blanco, y para la fecha de lanzamiento, indicando que debe ser en 1930 o posterior. 
 
 ### Controlador de Películas (`MoviesController`):
 
-Analiza y entiende el código del controlador proporcionado. Comprende cómo se manejan las acciones `new`, `create`, `edit`, `update`, y `destroy`.
+Analizamos y entiendemos el código del controlador proporcionado. Comprendemos cómo se manejan las acciones `new`, `create`, `edit`, `update`, y `destroy`.
+
+``` ruby
+class MoviesController < ApplicationController
+  def new
+    @movie = Movie.new
+  end 
+  def create
+    if (@movie = Movie.create(movie_params))
+      redirect_to movies_path, :notice => "#{@movie.title} created."
+    else
+      flash[:alert] = "Movie #{@movie.title} could not be created: " +
+        @movie.errors.full_messages.join(",")
+      render 'new'
+    end
+  end
+  def edit
+    @movie = Movie.find params[:id]
+  end
+  def update
+    @movie = Movie.find params[:id]
+    if (@movie.update_attributes(movie_params))
+      redirect_to movie_path(@movie), :notice => "#{@movie.title} updated."
+    else
+      flash[:alert] = "#{@movie.title} could not be updated: " +
+        @movie.errors.full_messages.join(",")
+      render 'edit'
+    end
+  end
+  def destroy
+    @movie = Movie.find(params[:id])
+    @movie.destroy
+    redirect_to movies_path, :notice => "#{@movie.title} deleted."
+  end
+  private
+  def movie_params
+    params.require(:movie)
+    params[:movie].permit(:title,:rating,:release_date)
+  end
+end
+
+ ``` 
+
+* `new` : Esta acción, permite la creación de una nueva instancia de la clase Movie.  
+* `create` :Nos permite manejar la creacion de una pelicula con los datos mandados desde un formulario, si esta es exitosa entonces da un mensaje de exito y redirige a la lista de peliculas, de lo contrario da un mensaje de error y vuelvo al formulario de creacion.  
+* `edit` : Esta acción permite editar la informacion de una pelicula, buscandola a traves de un id.  
+* `update` : Maneja la actualizacion de una pelicula que ya existe, si la actualiza exitosamente entonces redirige a la pagina de informacion de la pelicula, si falla nos redirige a la pagina de edicion.  
+* `destroy` : Maneja la destruccion de una pelicula por medio de su id.  
+* `movie_params` : Gestiona los parametros que podemos enviar a traves de nuestras peticiones.
+
 
 ### Canonicalización de Campos del Modelo:
 
-Agrega el método `capitalize_title` al modelo `Movie` para capitalizar el título antes de guardarlo. Verifica los resultados en la consola con el código de ejemplo proporcionado.
+Agregamos el método `capitalize_title` al modelo `Movie` para capitalizar el título antes de guardarlo. 
+
+ ```ruby
+class Movie < ActiveRecord::Base
+    before_save :capitalize_title
+    def capitalize_title
+        self.title = self.title.split(/\s+/).map(&:downcase).
+        map(&:capitalize).join(' ')
+    end
+end
+ ``` 
+
+Verificamos los resultados en la consola con el código de ejemplo proporcionado para comprobar si funciona la canonicalizacion :
+
+
 
 ### Filtro del Controlador:
 
