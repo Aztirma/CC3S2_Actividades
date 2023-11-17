@@ -148,7 +148,7 @@ end
 
 ### Canonicalización de Campos del Modelo:
 
-Agregamos el método `capitalize_title` al modelo `Movie` para capitalizar el título antes de guardarlo. 
+Agregamos el método `capitalize_title` al modelo `Movie` para capitalizar el título antes de guardarlo. Este método se encargará de transformar el título de la película para que cada palabra comience con una letra mayúscula y el resto de las letras sea minúscula. 
 
  ```ruby
 class Movie < ActiveRecord::Base
@@ -160,27 +160,141 @@ class Movie < ActiveRecord::Base
 end
  ``` 
 
-Verificamos los resultados en la consola con el código de ejemplo proporcionado para comprobar si funciona la canonicalizacion :
+Verificamos los resultados en la consola, para  comprobar si funciona la canonicalizacion, para esto se crea una nueva instancia de la clase Movie con atributos específicos, incluyendo un título ('STAR wars'), una fecha de lanzamiento ('127-5-1977) y una clasificación ('PG').
+
+![Alt text](image-10.png)
+
+AL utilizar el método create! este válida los datos ingresados antes de insertarlos a la base de datos, además que al escribir   `m.title` en la consola se observa que el título se ha estandarizado y capitalizado como "Star Wars", como se muestra a continuación:
+
+![Alt text](image-11.png)
 
 
 
 ### Filtro del Controlador:
 
-Analiza el código del filtro en `ApplicationController`. Entiende cómo se utiliza el filtro `before_filter` para asegurar que un usuario esté autenticado. Comprueba el resultado ejecutando el código proporcionado en la consola.
+Analizamos el código del filtro en `ApplicationController`, entendemos cómo se utiliza el filtro `before_filter` para asegurar que un usuario esté autenticado.
+
+ ```ruby
+class ApplicationController < ActionController::Base
+    before_filter :set_current_user
+    protected # prevents method from being invoked by a route
+    def set_current_user
+        # we exploit the fact that the below query may return nil
+        @current_user ||= Moviegoer.where(:id => session[:user_id])
+        redirect_to login_path and return unless @current_user
+    end
+end
+ ```
+
+Este método verifica la existencia de un usuario autenticado basándose en la información de sesión. Si no se encuentra un usuario, redirige a la página de inicio de sesión, asegurando así la autenticación antes de permitir el acceso a las acciones del controlador.
 
 ## Sección 2: SSO y Autenticación a través de Terceros
 
 ### Configuración Inicial:
 
-Ejecuta el comando para generar el modelo `Moviegoer` y la migración. Modifica el archivo `app/models/moviegoer.rb` con el código proporcionado.
+Para continuar con la implementación de la autenticación a través de terceros en nuestra aplicación Rails, sigue los siguientes pasos:
 
+Ejecutaremos el siguiente comando en la terminal para generar un modelo Moviegoer y una migración asociada:
+
+ ```
+ rails generate model Moviegoer name:string provider:string uid:string
+ ```
+
+Al ejecutar ese comando, nos encontramos con la siguiente situación, el mensaje de error indica que el nombre "Moviegoer" ya está siendo utilizado en nuestra aplicación o está reservado por Ruby on Rails.  
+
+![Alt text](image-12.png)
+
+Esto podría deberse a que ya existe un modelo en nuestra aplicación, para ello comprobaremos utilizando el siguiente comando.Este comando buscará en todos los archivos de modelos (./app/models) cualquier referencia a la clase Moviegoer. 
+
+ ```
+grep -r 'class Moviegoer' ./app/models
+ ```
+
+El resultado del comando grep indica que ya existe un archivo de modelo llamado moviegoer.rb en el directorio ./app/models y que contiene la definición de la clase Moviegoer. Por lo tanto, el modelo ya existe nuestra aplicación.
+
+ ![Alt text](image-13.png)
+
+Luego nos pide editar el archivo app/models/moviegoer.rb generado para que coincida con este codigo
+ ```ruby
+# Edit app/models/moviegoer.rb to look like this:
+class Moviegoer < ActiveRecord::Base
+    def self.create_with_omniauth(auth)
+        Moviegoer.create!(
+        :provider => auth["provider"],
+        :uid => auth["uid"],
+        :name => auth["info"]["name"])
+    end
+end
+ ```
+
+La función self.create_with_omniauth(auth) en el modelo Moviegoer permite la creación eficiente de un nuevo registro de usuario al autenticar a través de OmniAuth. Este método simplifica la integración de la información de autenticación proporcionada por un proveedor externo.
+ ![Alt text](image-15.png)
+
+ 
 ### OmniAuth y Configuración:
 
-Añade las rutas y controladores necesarios para OmniAuth en `config/routes.rb` y `app/controllers/sessions_controller.rb`. Reemplaza `API_KEY` y `API_SECRET` con las claves reales de Twitter en `config/initializers/omniauth.rb`.
+La autenticación del usuario a través de un tercero se simplifica mediante la utilización de la gema OmniAuth, que ofrece una API uniforme para varios proveedores de SSO. Para habilitar la autenticación, agregamos las gemas necesarias al archivo Gemfile:
+
+ ```
+gem 'omniauth'
+gem 'omniauth-twitter'
+ ```
+
+Posteriormente, al instalar estas gemas, configuramos las rutas en el archivo `config/routes.rb` para gestionar el flujo de autenticación:
+
+ ```ruby
+#routes.rb
+get  'auth/:provider/callback' => 'sessions#create'
+get  'auth/failure' => 'sessions#failure'
+get  'auth/twitter', :as => 'login'
+post 'logout' => 'sessions#destroy'
+ ```
+
+Adicionalmente, en el controlador SessionsController (ubicado en app/controllers/sessions_controller.rb), implementamos las acciones necesarias para el manejo de sesiones:
+
+```ruby
+class SessionsController < ApplicationController
+  # login & logout actions should not require user to be logged in
+  skip_before_filter :set_current_user  # check you version
+  def create
+    auth = request.env["omniauth.auth"]
+    user =
+      Moviegoer.where(provider: auth["provider"], uid: auth["uid"]) ||
+      Moviegoer.create_with_omniauth(auth)
+    session[:user_id] = user.id
+    redirect_to movies_path
+  end
+  def destroy
+    session.delete(:user_id)
+    flash[:notice] = 'Logged out successfully.'
+    redirect_to movies_path
+  end
+end
+```
+
+Ahora bien, la mayoría de los proveedores de autenticación requieren que registremos cualquier aplicación que utilizará su sitio para la autenticación, por lo que en este ejemplo necesitaremos crear una cuenta de desarrollador de Twitter, que nos asignará una clave API y un secreto API que especificaremos en `config/initializers/omniauth.rb`.
+
+![Alt text](image-16.png)
+
+Insertamos en el siguiente codigo nuestra API key y API key secret que obtuvimos al registrar la aplicación en Twitter.
+```
+# Replace API_KEY and API_SECRET with the values you got from Twitter
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :twitter, "API_KEY", "API_SECRET"
+end
+```
+
+Creamos el archivo `omniauth.rb` en el directorio `config/initializers/` donde insertamos nuestras API keys
+
+ ![Alt text](image-18.png)
 
 ### Seguridad y Preguntas:
 
-Analiza la pregunta sobre la seguridad y comprende la posible vulnerabilidad. Proporciona una respuesta sobre cómo evitar la vulnerabilidad.
+Pregunta: ¿Qué sucede si un atacante malintencionado crea un envío de formulario que intenta modificar params[:moviegoer][:uid] o params[:moviegoer][:provider] (campos que solo deben modificarse mediante la lógica de autenticación) publicando campos de formulario ocultos denominados params[moviegoer][uid] y así sucesivamente?.
+
+
+
+
 
 ## Sección 3: Asociaciones y Claves Foráneas
 
