@@ -230,7 +230,14 @@ end
 La función self.create_with_omniauth(auth) en el modelo Moviegoer permite la creación eficiente de un nuevo registro de usuario al autenticar a través de OmniAuth. Este método simplifica la integración de la información de autenticación proporcionada por un proveedor externo.
  ![Alt text](image-15.png)
 
- 
+
+Ya nuestro modelo esta correctamene configurado, ahora realizaremos la migraciòn correspondiente para crear la tabla en su base de datos, como se muestra a continuaciòn:
+
+![Alt text](image-25.png)
+
+Luego ejecutamos la migraciòn para aplicar los cambios en la base de datos
+
+![Alt text](image-27.png)
 ### OmniAuth y Configuración:
 
 La autenticación del usuario a través de un tercero se simplifica mediante la utilización de la gema OmniAuth, que ofrece una API uniforme para varios proveedores de SSO. Para habilitar la autenticación, agregamos las gemas necesarias al archivo Gemfile:
@@ -290,21 +297,119 @@ Creamos el archivo `omniauth.rb` en el directorio `config/initializers/` donde i
 
 ### Seguridad y Preguntas:
 
-Pregunta: ¿Qué sucede si un atacante malintencionado crea un envío de formulario que intenta modificar params[:moviegoer][:uid] o params[:moviegoer][:provider] (campos que solo deben modificarse mediante la lógica de autenticación) publicando campos de formulario ocultos denominados params[moviegoer][uid] y así sucesivamente?.
+Pregunta: **¿Qué sucede si un atacante malintencionado crea un envío de formulario que intenta modificar params[:moviegoer][:uid] o params[:moviegoer][:provider] (campos que solo deben modificarse mediante la lógica de autenticación) publicando campos de formulario ocultos denominados params[moviegoer][uid] y así sucesivamente?.**
 
 
-
+La manipulación maliciosa de parámetros en el formulario, como params[:moviegoer][:uid] o params[:moviegoer][:provider], podría comprometer la seguridad al permitir cambios no autorizados en la información del usuario, incluso el riesgo de robo de identidad. Una forma para abordar esta vulnerabilidad y fortalecer la seguridad es la implementaciòn de la autenticación de usuarios a través de un tercero utilizando la gema OmniAuth en nuestro caso.
 
 
 ## Sección 3: Asociaciones y Claves Foráneas
 
+Una asociación representa una relación lógica entre dos tipos de entidades. En el caso de RottenPotatoes, podemos establecer asociaciones entre las clases Review (crítica) y Moviegoer (espectador o usuario). Esto posibilita que los usuarios escriban críticas sobre películas favoritas. Se pueden crear asociaciones de uno a muchos (one-to-many) entre críticas y películas y entre críticas y usuarios.
+
+Nos pide explicar la siguiente línea de SQL:
+```sql
+SELECT reviews.*
+    FROM movies JOIN reviews ON movies.id=reviews.movie_id
+    WHERE movies.id = 41;
+```
+
+Esta consulta SQL extrae todas las críticas relacionadas con la película que tiene el ID 41. Utiliza la cláusula JOIN para combinar la información de las tablas "movies" y "reviews" a través de la coincidencia de los ID de película. Luego, la cláusula WHERE filtra los resultados para incluir solo las críticas asociadas a la película con el ID 41.
+
+Ahora realizamos los sisguientes cambios en la aplicación:
+
 ### Migración y Modelo de Reviews:
 
-Ejecuta el comando para generar la migración de la tabla `Reviews`. Completa la migración en `db/migrate/*_create_reviews.rb`. Crea el modelo `Review` en `app/models/review.rb`.
+Ejecutamos el comando para generar la migración de la tabla `Reviews`.  
 
+![Alt text](image-19.png)
+
+Completamos la migración en `db/migrate/*_create_reviews.rb`, con el siguiente codigo proporcionado 
+
+
+```ruby
+class CreateReviews < ActiveRecord::Migration
+    def change
+        create_table 'reviews' do |t|
+        t.integer    'potatoes'
+        t.text       'comments'
+        t.references 'moviegoer'
+        t.references 'movie'
+        end
+    end
+end
+```
+![Alt text](image-20.png)
+
+Creamos el modelo `Review` en `app/models/review.rb` y completamos con el siguiente código:
+
+```ruby
+ class Review < ActiveRecord::Base
+    belongs_to :movie
+    belongs_to :moviegoer
+end
+```
+![Alt text](image-21.png)
 ### Asociaciones Directas:
 
-Agrega la línea `has_many :reviews` a las clases `Movie` y `Moviegoer`. Comprende cómo se utilizan las asociaciones directas en el código proporcionado.
+Agregamos la línea `has_many :reviews` a las clases `Movie` y `Moviegoer`.  
+
+![Alt text](image-22.png)
+ ![Alt text](image-24.png)
+
+
+Una vez realizada la correcta configuracion para trabajar con asociaciones entre modelos (Movie, Moviegoer, y Review) en nuestra aplicacion ejecutamos rails console para ejecutar correctamente los ejemplos del código.
+
+```
+# it would be nice if we could do this:
+inception = Movie.where(:title => 'Inception')
+alice,bob = Moviegoer.find(alice_id, bob_id)
+# alice likes Inception, bob less so
+alice_review = Review.new(:potatoes => 5)
+bob_review   = Review.new(:potatoes => 3)
+# a movie has many reviews:
+inception.reviews = [alice_review, bob_review]
+# a moviegoer has many reviews:
+alice.reviews << alice_review
+bob.reviews << bob_review
+# can we find out who wrote each review?
+inception.reviews.map { |r| r.moviegoer.name } # => ['alice','bob']
+```
+
+Empezamos con esta linea de comando `inception = Movie.where(:title => 'Inception')` la cual se utiliza para buscar todas las películas con el título 'Inception'.
+
+![Alt text](image-28.png)
+
+Observamos que nos devuelve un resultado vacio, puesto que no hay ninguna pelicula con ese nombre, probamos ahora con el siguiente coamando `inception = Movie.where(:title => 'Inception')first_or_create` el cual, si encuentra una película con ese título, esa película se asigna a la variable inception. Si no se encuentra ninguna película con ese título, se crea una nueva película con el título "Inception" y esa película recién creada se asigna a la variable inception.
+
+![Alt text](image-29.png)
+
+
+El siguiente comando es `alice,bob = Moviegoer.find(alice_id, bob_id)` realiza una búsqueda en la tabla "moviegoers" de la base de datos para encontrar dos registros específicos utilizando los IDs proporcionados (alice_id y bob_id).
+
+![Alt text](image-30.png)
+
+Como se puede observar no se encontraron registros existentes asociados a estos IDs en la base de datos actual. Es por est que se procedio a crear nuevos registros para Alice y Bob en la tabla "moviegoers de la siguiente manera:
+
+![Alt text](image-32.png)
+
+Procedemos a instanciar dos objetos de la clase `Review`, asignándoles valores específicos al atributo potatoes.
+```
+alice_review = Review.new(:potatoes => 5)
+bob_review   = Review.new(:potatoes => 3)
+```
+
+![Alt text](image-33.png)
+
+Luego, asociamos estas instancias a la película `Inception` mediante la asignación inception.reviews = [alice_review, bob_review].
+
+ ![Alt text](image-35.png)
+
+A continuación, asociamos las review de Alice y Bob directamente a sus respectivos Moviegoer
+
+![Alt text](image-36.png)
+
+Continuamos obteniendo los nombres de los usuarios que han escrito críticas para la película `Inception`:
 
 ## Sección 4: Asociaciones Indirectas
 
@@ -324,13 +429,4 @@ Agrega las validaciones al modelo `Review` que se proporcionan. Comprueba el com
 
 Analiza la información sobre opciones adicionales en los métodos de asociaciones.
 
-## Sección 5: Conclusión y Organización del Informe
-
-### Conclusión:
-
-Recapitula los puntos clave y aprendizajes de cada sección.
-
-### Organización del Informe:
-
-Escribe un informe en formato Ruby on Rails avanzado, organizando la información de manera clara y concisa. Incluye ejemplos y resultados relevantes de la consola donde sea necesario. Presenta el informe en un repositorio llamado `Rails-Avanzado`.
-
+ 
