@@ -480,7 +480,7 @@ La siguiente consulta SQL ilustra cómo se seleccionan todas las columnas de la 
 
 * Como llamar a save o save! sobre un objeto que usa asociaciones también afecta a los objetos a los que esté asociado, se aplican algunas salvedades si alguno de estos métodos falla. Por ejemplo, en la anterior secciòn se creo una pelicula y dos reviews asociadas. Aqui el intento de guardar la película también intentará guardar las review asociadas. Si alguna de las validaciones falla en cualquiera de los objetos (película o crítica), la operación de guardado fallará, pero como se observa se pudo guardar correctamente.
 
-  ![Alt text](Images/image-41.png)
+  ![Alt text](image-41.png)
 
 
  
