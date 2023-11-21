@@ -1,4 +1,3 @@
-// Comparaciones booleanas
 console.log(undefined == null);
 console.log(NaN == NaN);
 console.log(null == false);
