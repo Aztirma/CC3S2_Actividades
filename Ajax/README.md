@@ -1,7 +1,5 @@
 ## AJAX: Asynchronous JavaScript y XML
 
-Presenta un repositorio de tus respuestas llamado `Ajax` y utiliza el siguiente proyecto: https://github.com/kapumota/Desarrollo-software-2023/tree/main/Semana8/myrottenpotatoes.
-
 Indicamos los pasos necesarios para la programación `AJAX on Rails`: 
 
 1. Crear una acción del controlador o modificar una existente para gestionar las peticiones AJAX hechas por el código JavaScript.
@@ -18,6 +16,14 @@ Indicamos los pasos necesarios para la programación `AJAX on Rails`:
    elemento existente por completo, `text()` o `html()` para actualizar el contenido de un elemento in situ o una animación como `hide()` para ocultar o mostrar elementos.
    Puesto que las funciones JavaScript son clausuras (como los bloques de Ruby), la función `callback` tiene acceso a todas las variables visibles en el momento en el que se
    realizó la llamada XHR, aun cuando se ejecuta más tarde y en un entorno distinto.
+
+
+### Parte 0
+
+Antes de comenzar con las modificaciones correspondientes para poder realizar la actividad, nos encontramos con unos pequeños errores, el primero en los controladores ya que la variable Moviegoers no esta inicializada en ese caso debemos cambiar esa linea de codigo por la variable Movie, luego nos muestra un error sobre sintaxis en el archivo de `movie.rb` ya que habia un segmento de codigo comentado, una vez resuelto estos errores ejecutamos nuestro servidor en rails, el cual tiene la siguiente vista:
+
+![Alt text](image-1.png)
+
 
 ### Parte 1
 
@@ -42,6 +48,12 @@ class MoviesController < ApplicationController
   end
 end
 ```
+
+Primero identificaremos el elemento que se va a renderizar, como nos menciona la actividad modificaremos la accion `show`, actualmente nuestra acción:
+
+![Alt text](image.png)
+
+
 
 ### Parte 2
 
