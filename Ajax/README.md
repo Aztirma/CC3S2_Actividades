@@ -24,40 +24,48 @@ Antes de comenzar con las modificaciones correspondientes para poder realizar la
 
 ![Alt text](image-1.png)
 
+Pero al tratar de editar una película, nos dice que estamos intentando acceder a la acción de edición (edit) en el controlador MoviesController, pero Rails no puede encontrar la plantilla adecuada para mostrar en el formato text/html. Por eso, agregamos la vista llamada edit.html.erb, pero al actualizar la información de la película, nos aparece un error.
+
+![Alt text](image-2.png)
+
 
 ### Parte 1
 
-El paso 1 necesita que identifiquemos o creemos una nueva acción de controlador que será la encargada de gestionar la petición. Usaremos la acción ya existente `MoviesController#show`, por lo que no necesitaremos definir una nueva ruta. Esta decisión de diseño es justificable, dado que la versión AJAX de la acción realiza la misma función que la versión original, es decir, la acción REST de mostrar (`show`). 
+El paso 1 necesita que identifiquemos o creemos una nueva acción de controlador que será la encargada de gestionar la petición. Usaremos la acción ya existente `MoviesController#show`, por lo que no necesitaremos definir una nueva ruta. \
 
-Modifica la acción `show` de forma que, si está respondiendo a una petición AJAX, procesará la sencilla vista parcial el código siguiente en lugar de la vista completa.
-
-```
- <p> <%= movie.description %> </p>
- <%= link_to 'Edit Movie', edit_movie_path(movie), :class => 'btn btn-primary' %>
- <%= link_to 'Close', '', :id => 'closeLink', :class => 'btn btn-secondary' %>
-```
-¿Cómo sabe la acción de controlador si `show` fue llamada desde código JavaScript o mediante una petición HTTP normal iniciada por el usuario? Utiliza el código siguiente  para mostrar la acción del controlador que renderizará la vista parcial. 
-
-```
-class MoviesController < ApplicationController
-  def show
-    id = params[:id] # retrieve movie ID from URI route
-    @movie = Movie.find(id) # look up movie by unique ID
-    render(:partial => 'movie', :object => @movie) if request.xhr?
-    # will render app/views/movies/show.<extension> by default
-  end
-end
-```
-
-Primero identificaremos el elemento que se va a renderizar, como nos menciona la actividad modificaremos la accion `show`, actualmente nuestra acción:
+Primero identificaremos el elemento que se va a renderizar, como nos menciona la actividad modificaremos el metodo `show`, para que de este modo si se recibe una petición AJAX, entonces procesará la sencilla vista parcial en lugar de la vista completa.
 
 ![Alt text](image.png)
 
 
+Para ello, agregaremos la siguiente linea, la cual es la encargada como ya mencionamos de renderizar una vista parcial de la vista `movie`, de este modo podra recibir peticiones normales como peticiones AJAX.
+
+```
+render(:partial => 'movie', :object => @movie) if request.xhr?
+```
+
+![Alt text](image-4.png)
+
+
+Además, debemos crear un archivo de vista parcial llamado _movie.html.erb para definir la presentación específica de una película cuando se realiza una solicitud AJAX en la acción `show` del controlador `MoviesController`. Este archivo estará ubicado en el directorio app/views/movies de nuestro proyecto y contendrá lo siguiente:
+
+```html
+<p> <%= movie.description %> </p>
+<%= link_to 'Edit Movie', edit_movie_path(movie), :class => 'btn btn-primary' %>
+<%= link_to 'Close', '', :id => 'closeLink', :class => 'btn btn-secondary' %>
+```
+![Alt text](image-6.png)
+
+Reiterando, este archivo define cómo se mostrará la información de la película en el contexto de una solicitud AJAX.
+
+**¿Cómo sabe la acción de controlador si show fue llamada desde código JavaScript o mediante una petición HTTP normal iniciada por el usuario?**
+La acción del controlador `show` determina si fue llamada desde código JavaScript o mediante una petición HTTP normal iniciada por el usuario a través de la verificación de `request.xhr?`. La condición `if request.xhr?` verifica si la solicitud se realizó a través de XMLHttpRequest, comúnmente asociado con peticiones AJAX. 
 
 ### Parte 2
 
- ¿Cómo debería construir y lanzar la petición XHR el código JavaScript? Queremos que la ventana flotante aparezca cuando pinchamos en el enlace que tiene el nombre de la película.
+ **¿Cómo debería construir y lanzar la petición XHR el código JavaScript?**     
+ 
+  Queremos que la ventana flotante aparezca cuando pinchamos en el enlace que tiene el nombre de la película.
 
 Explica el siguiente código
 
