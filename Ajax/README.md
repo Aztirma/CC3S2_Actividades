@@ -59,6 +59,7 @@ Además, debemos crear un archivo de vista parcial llamado _movie.html.erb para 
 Reiterando, este archivo define cómo se mostrará la información de la película en el contexto de una solicitud AJAX.
 
 **¿Cómo sabe la acción de controlador si show fue llamada desde código JavaScript o mediante una petición HTTP normal iniciada por el usuario?**
+
 La acción del controlador `show` determina si fue llamada desde código JavaScript o mediante una petición HTTP normal iniciada por el usuario a través de la verificación de `request.xhr?`. La condición `if request.xhr?` verifica si la solicitud se realizó a través de XMLHttpRequest, comúnmente asociado con peticiones AJAX. 
 
 ### Parte 2
@@ -106,21 +107,121 @@ var MoviePopup = {
 $(MoviePopup.setup);
 ```
 
-Ocurren algunos trucos interesantes de CSS en el código anterior Puesto que el objetivo es que la ventana emergente `flote`, podemos utilizar CSS para especificar la posición como absolute añadiendo el siguiente código en `app/assets/stylesheets/application.css` :
+## Explicacion del codigo: 
 
+De forma general, se podria decir que el codigo permite mostrar detalles de películas en ventanas emergentes al hacer clic en enlaces dentro del elemento con el id `movies`, utilizando solicitudes AJAX para obtener la información de manera interactiva. A continuacion se dara una informacion detallada por fragmento para un mejor entendimiento del código.
+
+
+El **método `setup`** de MoviePopup se encarga de preparar la ventana emergente.Se crea un elemento `div` oculto llamado 'movieInfo' al final de la página. Además, se establece un evento de clic para los enlaces dentro del elemento con el id 'movies', de modo que al hacer clic, se activa la función `MoviePopup.getMovieInfo`.
+
+```javascript
+setup: function() {
+  let popupDiv = $('<div id="movieInfo"></div>');
+  popupDiv.hide().appendTo($('body'));
+  $(document).on('click', '#movies a', MoviePopup.getMovieInfo);
+},
 ```
+
+El **método `getMovieInfo`** maneja la obtención de detalles de la película al hacer clic en un enlace dentro del elemento 'movies'. Hace una solicitud AJAX de tipo GET al URL del enlace clicado y espera la respuesta. Si la solicitud es exitosa, invoca `MoviePopup.showMovieInfo` para mostrar la información en la ventana emergente. En caso de error, muestra una alerta.
+
+```javascript
+getMovieInfo: function() {
+  $.ajax({
+    type: 'GET',
+    url: $(this).attr('href'),
+    timeout: 5000,
+    success: MoviePopup.showMovieInfo,
+    error: function(xhrObj, textStatus, exception) { alert('Error!'); }
+  });
+  return false;
+},
+```
+
+**La función `showMovieInfo`** se encarga de presentar la información de la película en la ventana emergente. Calcula la posición y el tamaño de la ventana basándose en el tamaño de la pantalla. Rellena el contenido del elemento '#movieInfo' con los datos recibidos y hace visible la ventana emergente. Además, agrega un evento de clic al enlace de cierre ('#closeLink') para cerrar la ventana emergente.
+
+```javascript
+showMovieInfo: function(data, requestStatus, xhrObject) {
+  let oneFourth = Math.ceil($(window).width() / 4);
+  $('#movieInfo').
+    css({'left': oneFourth,  'width': 2*oneFourth, 'top': 250}).
+    html(data).
+    show();
+  $('#closeLink').click(MoviePopup.hideMovieInfo);
+  return false;
+},
+```
+
+**El método `hideMovieInfo`** simplemente oculta la ventana emergente al hacer clic en el enlace de cierre ('#closeLink'). Proporciona una manera sencilla de cerrar la presentación de la película.
+
+```javascript
+hideMovieInfo: function() {
+  $('#movieInfo').hide();
+  return false;
+},
+```
+Este fragmento final $(MoviePopup.setup); se encarga de ejecutar la configuración inicial del objeto `MoviePopup` cuando el documento está completamente cargado.
+
+```javascript
+$(MoviePopup.setup);
+```
+Después de comprender la lógica y funcionamiento del código, procederemos a su implementación en nuestro proyecto. Creamos un archivo llamado  `movie_popup.js` ubicado en el directorio app/javascript/ 
+
+![Alt text](image-7.png)
+
+Adicionalmente, se ajustó el método `show` en el controlador `movies_controller.rb` para que, al recibir una solicitud XMLHttpRequest (`request.xhr?`), renderice el parcial '_partial_show' ubicado en el directorio 'movies'. 
+
+![Alt text](image-9.png)
+
+Este parcial, denominado `_partial_show.html.erb`, ha sido creado para contener la presentación específica de la película, incorporando elementos como el título y enlaces para editar y cerrar la ventana emergente.
+
+![Alt text](image-10.png)
+
+Estos cambios preparan la visualización exitosa de la ventana emergente al hacer clic en un enlace relacionado con una película específica.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Para lograr que la ventana emergente tenga un comportamiento visual más atractivo, utilizaremos CSS para definir su posición. Añadiremos el siguiente código en el archivo app/assets/stylesheets/application.css:
+
+```css
 #movieInfo {
   padding: 2ex;
   position: absolute;
   border: 2px double grey;
   background: wheat;
 }
-```
 
-¿Cuáles son tus resultados?
+```
+![Alt text](image-8.png)
+
+
+ 
 
 ### Parte 3
 
 Conviene mencionar una advertencia a considerar cuando se usa JavaScript para crear nuevos elementos dinámicamente en tiempo de ejecución, aunque no surgió en este ejemplo en concreto. Sabemos que `$(’.myClass’).on(’click’,func)` registra `func` como el manejador de eventos de clic para todos los elementos actuales que coincidan con la clase CSS myClass. Pero si se utiliza JavaScript para crear nuevos elementos que coincidan con `myClass` después de la carga inicial de la página y de la llamada inicial a `on`, dichos elementos no tendrán el manejador asociado, ya que `on` sólo puede asociar manejadores a elementos existentes. 
 
 ¿Cuál es solución que brinda jQuery  a este problema? 
+
+jQuery aborda una posible soluacion a este problema mediante la "delegación de eventos". En lugar de asignar directamente el manejador a los elementos específicos, se asigna a un elemento contenedor existente que envuelve a los elementos dinámicos. Por ejemplo:
+
+```javascript
+$('#container').on('click', '.myClass', function() {
+  
+});
+```
+En este enfoque, `#container` es un elemento que ya existe en el DOM y actúa como el contenedor para los elementos dinámicos con la clase `.myClass`. Esto permite que los eventos sean gestionados incluso por elementos generados dinámicamente después de la carga inicial de la página.
