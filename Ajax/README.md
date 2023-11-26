@@ -176,24 +176,6 @@ Este parcial, denominado `_partial_show.html.erb`, ha sido creado para contener 
 
 ![Alt text](image-10.png)
 
-Estos cambios preparan la visualización exitosa de la ventana emergente al hacer clic en un enlace relacionado con una película específica.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Para lograr que la ventana emergente tenga un comportamiento visual más atractivo, utilizaremos CSS para definir su posición. Añadiremos el siguiente código en el archivo app/assets/stylesheets/application.css:
 
@@ -207,6 +189,12 @@ Para lograr que la ventana emergente tenga un comportamiento visual más atracti
 
 ```
 ![Alt text](image-8.png)
+
+
+Estos cambios preparan la visualización exitosa de la ventana emergente al hacer clic en un enlace relacionado con una película específica.
+
+![Alt text](image-11.png)
+
 
 
  
