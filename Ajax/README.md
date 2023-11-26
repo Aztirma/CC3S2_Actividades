@@ -1,33 +1,12 @@
 ## AJAX: Asynchronous JavaScript y XML
 
-Indicamos los pasos necesarios para la programación `AJAX on Rails`: 
-
-1. Crear una acción del controlador o modificar una existente para gestionar las peticiones AJAX hechas por el código JavaScript.
-   En lugar de procesar una vista completa, la acción procesará una parcial para generar un fragmento HTML que se insertará en la página. 
-
-2. Construir un URI REST en JavaScript y utilizar XHR (XmlHttpRequest) para enviar la petición HTTP al servidor.
-   Como habrás supuesto, jQuery dispone de atajos útiles para muchos casos habituales, por lo que utilizaremos las funciones de más alto nivel y más potentes que ofrece jQuery en      lugar de llamar a XHR directamente. 
-
-3. Dado que JavaScript, por definición, se ejecuta en un hilo único (single-threaded ), sólo puede trabajar en una tarea cada vez hasta que dicha tarea se completa, la interfaz de
-   usuario del navegador se quedaría `congelada` mientras JavaScript esperara la respuesta del servidor. Por ello, XHR en cambio vuelve inmediatamente de la llamada a la función y
-   permite proporcionar una función callback para manejar el evento que se activará cuando responda el servidor o si se produce un error. 
-
-4. Cuando la respuesta llega al navegador, el contenido de la respuesta se pasa a la función callback. Puede utilizar la función `replaceWith()` de jQuery para reemplazar un       
-   elemento existente por completo, `text()` o `html()` para actualizar el contenido de un elemento in situ o una animación como `hide()` para ocultar o mostrar elementos.
-   Puesto que las funciones JavaScript son clausuras (como los bloques de Ruby), la función `callback` tiene acceso a todas las variables visibles en el momento en el que se
-   realizó la llamada XHR, aun cuando se ejecuta más tarde y en un entorno distinto.
-
-
-### Parte 0
-
 Antes de comenzar con las modificaciones correspondientes para poder realizar la actividad, nos encontramos con unos pequeños errores, el primero en los controladores ya que la variable Moviegoers no esta inicializada en ese caso debemos cambiar esa linea de codigo por la variable Movie, luego nos muestra un error sobre sintaxis en el archivo de `movie.rb` ya que habia un segmento de codigo comentado, una vez resuelto estos errores ejecutamos nuestro servidor en rails, el cual tiene la siguiente vista:
 
-![Alt text](image-1.png)
+![Alt text](Images/image-1.png)
 
-Pero al tratar de editar una película, nos dice que estamos intentando acceder a la acción de edición (edit) en el controlador MoviesController, pero Rails no puede encontrar la plantilla adecuada para mostrar en el formato text/html. Por eso, agregamos la vista llamada edit.html.erb, pero al actualizar la información de la película, nos aparece un error.
+Observamos si queremos editar una pelicula, nos dice que estamos intentando acceder a la acción de edición (edit) en el controlador MoviesController, pero Rails no puede encontrar la plantilla adecuada para mostrar en el formato text/html.  .
 
-![Alt text](image-2.png)
-
+![Alt text](Images/image-2.png)
 
 ### Parte 1
 
@@ -35,7 +14,7 @@ El paso 1 necesita que identifiquemos o creemos una nueva acción de controlador
 
 Primero identificaremos el elemento que se va a renderizar, como nos menciona la actividad modificaremos el metodo `show`, para que de este modo si se recibe una petición AJAX, entonces procesará la sencilla vista parcial en lugar de la vista completa.
 
-![Alt text](image.png)
+![Alt text](Images/image.png)
 
 
 Para ello, agregaremos la siguiente linea, la cual es la encargada como ya mencionamos de renderizar una vista parcial de la vista `movie`, de este modo podra recibir peticiones normales como peticiones AJAX.
@@ -44,7 +23,7 @@ Para ello, agregaremos la siguiente linea, la cual es la encargada como ya menci
 render(:partial => 'movie', :object => @movie) if request.xhr?
 ```
 
-![Alt text](image-4.png)
+![Alt text](Images/image-4.png)
 
 
 Además, debemos crear un archivo de vista parcial llamado _movie.html.erb para definir la presentación específica de una película cuando se realiza una solicitud AJAX en la acción `show` del controlador `MoviesController`. Este archivo estará ubicado en el directorio app/views/movies de nuestro proyecto y contendrá lo siguiente:
@@ -54,7 +33,7 @@ Además, debemos crear un archivo de vista parcial llamado _movie.html.erb para 
 <%= link_to 'Edit Movie', edit_movie_path(movie), :class => 'btn btn-primary' %>
 <%= link_to 'Close', '', :id => 'closeLink', :class => 'btn btn-secondary' %>
 ```
-![Alt text](image-6.png)
+![Alt text](Images/image-6.png)
 
 Reiterando, este archivo define cómo se mostrará la información de la película en el contexto de una solicitud AJAX.
 
@@ -166,34 +145,28 @@ $(MoviePopup.setup);
 ```
 Después de comprender la lógica y funcionamiento del código, procederemos a su implementación en nuestro proyecto. Creamos un archivo llamado  `movie_popup.js` ubicado en el directorio app/javascript/ 
 
-![Alt text](image-7.png)
+![Alt text](Images/image-7.png)
 
 Adicionalmente, se ajustó el método `show` en el controlador `movies_controller.rb` para que, al recibir una solicitud XMLHttpRequest (`request.xhr?`), renderice el parcial '_partial_show' ubicado en el directorio 'movies'. 
 
-![Alt text](image-9.png)
+![Alt text](Images/image-9.png)
 
 Este parcial, denominado `_partial_show.html.erb`, ha sido creado para contener la presentación específica de la película, incorporando elementos como el título y enlaces para editar y cerrar la ventana emergente.
 
-![Alt text](image-10.png)
+![Alt text](Images/image-10.png)
 
+Ahora debemos incluir el archivo en la vista de la aplicacion app/views/layouts/application.html.erb de la siguiente manera:
+
+![Alt text](Images/image-12.png)
 
 Para lograr que la ventana emergente tenga un comportamiento visual más atractivo, utilizaremos CSS para definir su posición. Añadiremos el siguiente código en el archivo app/assets/stylesheets/application.css:
 
-```css
-#movieInfo {
-  padding: 2ex;
-  position: absolute;
-  border: 2px double grey;
-  background: wheat;
-}
 
-```
-![Alt text](image-8.png)
-
+![Alt text](Images/image-13.png)
 
 Estos cambios preparan la visualización exitosa de la ventana emergente al hacer clic en un enlace relacionado con una película específica.
 
-![Alt text](image-11.png)
+![Alt text](Images/image-11.png)
 
 
 
@@ -209,7 +182,7 @@ jQuery aborda una posible soluacion a este problema mediante la "delegación de 
 
 ```javascript
 $('#container').on('click', '.myClass', function() {
-  
+  //...
 });
 ```
 En este enfoque, `#container` es un elemento que ya existe en el DOM y actúa como el contenedor para los elementos dinámicos con la clase `.myClass`. Esto permite que los eventos sean gestionados incluso por elementos generados dinámicamente después de la carga inicial de la página.
