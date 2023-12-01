@@ -194,25 +194,16 @@ Las líneas de código:
 ```
  Estas líneas de código están dentro de una suite de pruebas Jasmine y se centran en simular una llamada Ajax exitosa y verificar el comportamiento resultante:
 
-1. **`let htmlResponse = readFixtures('movie_info.html');`**
-   - Se carga un conjunto de datos simulados desde el archivo 'movie_info.html'.
+1. **`let htmlResponse = readFixtures('movie_info.html');`** Esta linea de aqui carga un conjunto de datos simulados desde el archivo 'movie_info.html'.
 
-2. **`spyOn($, 'ajax').and.callFake(function(ajaxArgs) { ajaxArgs.success(htmlResponse, '200'); });`**
-   - Se espía la función `$.ajax` para simular una llamada Ajax exitosa, usando datos simulados y un código de estado '200'.
+2. **`spyOn($, 'ajax').and.callFake(function(ajaxArgs) { ajaxArgs.success(htmlResponse, '200'); });`** Se espía la función `$.ajax` para simular una llamada Ajax exitosa, usando datos simulados y un código de estado '200'.
 
-3. **`$('#movies a').trigger('click');`**
-   - Se simula hacer clic en un enlace dentro del elemento con ID 'movies', desencadenando la llamada Ajax simulada.
+3. **`$('#movies a').trigger('click');`** Se simula hacer clic en un enlace dentro del elemento con ID 'movies', desencadenando la llamada Ajax simulada.
 
-4. **`it('makes #movieInfo visible', function() { expect($('#movieInfo')).toBeVisible(); });`**
-   - Se prueba que el elemento con ID 'movieInfo' se vuelva visible después de la llamada Ajax simulada.
+4. **`it('makes #movieInfo visible', function() { expect($('#movieInfo')).toBeVisible(); });`** Se prueba que el elemento con ID 'movieInfo' se vuelva visible después de la llamada Ajax simulada.
 
-5. **`it('places movie title in #movieInfo', function() { expect($('#movieInfo').text()).toContain('Casablanca'); });`**
-   - Se verifica que el contenido del elemento con ID 'movieInfo' contiene el texto 'Casablanca' después de la llamada Ajax simulada.
+5. **`it('places movie title in #movieInfo', function() { expect($('#movieInfo').text()).toContain('Casablanca'); });`** Se verifica que el contenido del elemento con ID 'movieInfo' contiene el texto 'Casablanca' después de la llamada Ajax simulada.
 
-En resumen, estas líneas establecen un entorno controlado para probar la interacción de JavaScript con Ajax y el DOM, asegurándose de que la respuesta esperada de la llamada Ajax se refleje correctamente en la interfaz de usuario.
-### Verificación de la Función `setup`
-
-Verificamos que la función `setup` en `movie_popup.js` se ejecute correctamente. Cargamos la página y confirmamos que el elemento `#movieInfo` se agregue y esté oculto.
 
 #### Pregunta: Dado que Jasmine carga todos los ficheros JavaScript antes de ejecutar ningún ejemplo, la llamada a setup (línea 34 del codigo siguiente llamado `movie_popup.js`)ocurre antes de que se ejecuten nuestras pruebas, comprueba que dicha función hace su trabajo y muestra los resultados.
 
@@ -254,6 +245,7 @@ $(MoviePopup.setup);
 
 
 ```
+Cinco especificaciones de Jasmine de camino feliz para el código AJAX desarrollado en la Sección 6.7. Las líneas 2 a 9 comprueban si la función MoviePopup.setup configura correctamente el div flotante que se utilizará para mostrar la información de la película. Las líneas 10 a 32 verifican el comportamiento del código AJAX sin llamar realmente al servidor de RottenPotatoes evitando la llamada AJAX.
 
 #### Pregunta 5: Indica cuales son los stubs y fixtures disponibles en Jasmine y Jasmine-jQuery.
 
@@ -291,3 +283,4 @@ En Jasmine, `beforeEach` y `afterEach` permiten ejecutar código de inicializaci
 14. **Extensión de Validación en ActiveModel:**
 
    Extendemos la función de validación en ActiveModel para generar automáticamente código JavaScript que valide las entradas del formulario antes de ser enviado.
+
