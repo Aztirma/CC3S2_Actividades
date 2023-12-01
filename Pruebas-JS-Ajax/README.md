@@ -7,13 +7,14 @@
 Para empezar a utilizar [Jasmine](https://jasmine.github.io/), añadimos `gem jasmine` en nuestro  Gemfile y ejecutamos bundle install como siempre; después, ejecuta los comandos siguientes desde el directorio raíz de su aplicación.
 
 ![Alt text](image.png)
-Una vez escrita la gema que nesecitamos en nuestro archivo gemfile, para que se instale escribimos el siguiente comando:
+
+Una vez añadida la gema necesaria al archivo gemfile, procedemos a instalarla ejecutando el siguiente comando:
 
 ```
 bundle install
 ```
 
-Como se puede observar en la siguiente imagen, se instalo correctamente la gema Jasmine.
+La instalación de la gema Jasmine se realiza correctamente, como se muestra en la siguiente imagen.
 
 ![Alt text](image-1.png)
 
@@ -25,8 +26,7 @@ rails generate jasmine:install
 
 ![Alt text](image-2.png)
 
-Creamos el directorio para los fixtures de Jasmine con:
-
+Creamos el directorio para los fixtures de Jasmine mediante el siguiente comando:
 
 ```
 mkdir spec/javascripts/fixtures 
@@ -46,16 +46,17 @@ Creamos el archivo `spec/javascripts/basic_check_spec.js` con el siguiente conte
    });
    ```
 
-Como se observa a continuación, el código 
+Este código utiliza Jasmine para realizar una prueba simple, verificando que el sistema de pruebas esté listo. La prueba compara si el valor booleano true es idéntico a true. Dado que esta afirmación es siempre verdadera, la prueba valida la configuración básica del entorno de pruebas Jasmine.
+
 ![Alt text](image-4.png)
 
-Una vez creado el conjunto de pruebas, agregamos `/= link boot0.js` en la ubicacion `app/assets/config/manifest.js`
+Despues de crear el conjunto de pruebas, agregamos `/= link boot0.js` en la ubicacion `app/assets/config/manifest.js`
 
 ![Alt text](image-7.png)
 
 Además en la ubicacion `config/routes.` agregar la siguientes lineas de codigo para que coincida con la ruta `/spec` y que este configurada para manejar solicitudes GET.
 
-
+![Alt text](image-10.png)
 
 Iniciamos nuestra aplicación con:
 
@@ -63,15 +64,53 @@ Iniciamos nuestra aplicación con:
    rails server
    ```
 
-![Alt text](image-5.png)
-![Alt text](image-6.png)
+![Alt text](image-11.png)
+
 Accedemos a las pruebas Jasmine en el navegador (por ejemplo, http://localhost:3000/specs) y verificamos que la prueba básica se ejecuta correctamente.
 
-## Preguntas:
+![Alt text](image-5.png)
+
+Como se observa, si bien la salidanos dice que se cargo correctamete la aplicación, se puede observar que no se cargan todos los datos, para saber más del problema inspeccionamos la pagina a ver si nos puede dar un poco más de información sobre los posibles errores:
+
+![Alt text](image-6.png)
+
+Este error indica que hay un problema en el archivo `boot-e820afaf0854f70bb7dd80f15bb298d9c55115e9971011dace41609df63e4e65.js` en las líneas 52 y 167. Parece que hay un intento de llamar a una función `jasmineRequire.html` que no está definida, lo cual podría deberse a una configuración incorrecta o a la falta de carga adecuada de las dependencias de Jasmine. 
+
+![Alt text](image-16.png)
+
+Se buscó una solución actualizando las gemas y observando el archivo jasmine.yml, pero no se encontró una solución al problema. Es por eso que optamos por trabajar con el terminal para ejecutar las pruebas.
+
+
+Escribimos el siguiente comando  `jasmine-browser-runner` en nuestro terminal y esto esperamos a que se cargue la página de la aplicación.
+
+
+![Alt text](image-12.png)
+ 
+En el terminal nos muestra que el servidor de Jasmine se esta ejecutando en http://localhost:8000/, accedemos al link y se puede observar lo siguiente
+
+![Alt text](image-13.png)
+
+La imagen nos indica que la prueba paso exitosamente, ya que como mencionamos nuestra prueba compara si el valor booleano true es idéntico a true.
+
+Modificamos el codigo  
+
+Pero observamos si cambios uno de los valores boleeanos por false, se observa que nuestra prueba ha resultado en un fallo. La especificación esperaba que una afirmación fuera falsa, pero en la ejecución resultó ser verdadera. El mensaje de error indica "Expected true to be false".
+
+![Alt text](image-15.png)
 
 #### Pregunta 1: ¿Cuáles son los problemas que se tiene cuando se debe probar Ajax?. Explica tu respuesta.
 
 Cuando probamos Ajax, nos enfrentamos a algunos problemas comunes, como la asincronía, el manejo de respuestas asíncronas y la dependencia de servicios externos.
+
+1. **Asincronía:** Las operaciones Ajax ocurren de manera asíncrona, lo que complica la secuencia de ejecución de las pruebas y puede generar resultados impredecibles si no se manejan adecuadamente.
+
+2. **Respuestas Asíncronas:** La gestión de respuestas asíncronas requiere cuidado para garantizar que las pruebas esperen el resultado correcto antes de evaluarlo, evitando falsos positivos o negativos.
+
+3. **Dependencia de Servicios Externos:** Las llamadas Ajax a menudo interactúan con servicios externos, lo que puede introducir dependencias difíciles de controlar en el entorno de prueba. Es crucial simular estas interacciones para garantizar la consistencia de las pruebas.
+
+4. **Actualización Dinámica del Contenido:** Dado que Ajax se utiliza para actualizar dinámicamente el contenido de las páginas web, las pruebas deben verificar que estos cambios se reflejen correctamente y no afecten negativamente otras partes de la aplicación.
+
+5. **Manejo de Errores Asíncronos:** Las pruebas deben abordar posibles errores en las operaciones Ajax, como tiempos de espera o respuestas inesperadas, para garantizar que se manejen de manera adecuada y no afecten la integridad de la aplicación.
 
 #### Pregunta 2: ¿Qué son los stubs, espias y fixture en Jasmine para realizar pruebas de Ajax?
 
@@ -118,6 +157,11 @@ describe('MoviePopup', function() {
   });
 });
  ```
+
+ ![Alt text](image-17.png)
+
+Nos sale este error debido a que parece que no se configuro correctamente JQuery.
+
 #### Pregunta: ¿Que hacen las siguientes líneas del código anterior?. ¿Cuál es el papel de spyOn de Jasmine y los stubs en el código dado.
  ```
 it('calls correct URL', function() {
@@ -126,9 +170,9 @@ it('calls correct URL', function() {
       expect($.ajax.calls.mostRecent().args[0]['url']).toEqual('/movies/1');
     });
  ```
-   - La primera línea utiliza `spyOn` para espiar la función `$.ajax` y luego verifica que la URL sea correcta después de hacer clic en un enlace.
+La primera línea utiliza `spyOn` para espiar la función `$.ajax` y luego verifica que la URL sea correcta después de hacer clic en un enlace.
 
-   - Las siguientes líneas simulan una llamada exitosa al servidor y verifican la visibilidad del elemento `#movieInfo` y el contenido del mismo.
+Las siguientes líneas simulan una llamada exitosa al servidor y verifican la visibilidad del elemento `#movieInfo` y el contenido del mismo.
 
 
 #### Pregunta 3:
