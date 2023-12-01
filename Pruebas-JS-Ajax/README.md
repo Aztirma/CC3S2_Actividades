@@ -174,20 +174,7 @@ La primera línea utiliza `spyOn` para espiar la función `$.ajax` y luego verif
 
 Las siguientes líneas simulan una llamada exitosa al servidor y verifican la visibilidad del elemento `#movieInfo` y el contenido del mismo.
 
-
-#### Pregunta 3:
-
-Las líneas de código:
-
-```javascript
-spyOn($, 'ajax');
-$('#movies a').trigger('click');
-expect($.ajax.calls.mostRecent().args[0]['url']).toEqual('/movies/1');
-```
-
-Espían la llamada a `$.ajax`, simulan un clic en un enlace y verifican que la URL de la última llamada a `$.ajax` sea '/movies/1'.
-
-#### Pregunta 4: ¿Que hacen las siguientes líneas del código anterior?.
+#### Pregunta 3: ¿Que hacen las siguientes líneas del código anterior?.
 
 Las líneas de código:
 
@@ -205,9 +192,24 @@ Las líneas de código:
         expect($('#movieInfo').text()).toContain('Casablanca');
 
 ```
+ Estas líneas de código están dentro de una suite de pruebas Jasmine y se centran en simular una llamada Ajax exitosa y verificar el comportamiento resultante:
 
-Simulan una llamada Ajax exitosa con datos simulados. Luego, las pruebas verifican la visibilidad de `#movieInfo` y si el título de la película está contenido en él. FALTA FALTA GALTA
+1. **`let htmlResponse = readFixtures('movie_info.html');`**
+   - Se carga un conjunto de datos simulados desde el archivo 'movie_info.html'.
 
+2. **`spyOn($, 'ajax').and.callFake(function(ajaxArgs) { ajaxArgs.success(htmlResponse, '200'); });`**
+   - Se espía la función `$.ajax` para simular una llamada Ajax exitosa, usando datos simulados y un código de estado '200'.
+
+3. **`$('#movies a').trigger('click');`**
+   - Se simula hacer clic en un enlace dentro del elemento con ID 'movies', desencadenando la llamada Ajax simulada.
+
+4. **`it('makes #movieInfo visible', function() { expect($('#movieInfo')).toBeVisible(); });`**
+   - Se prueba que el elemento con ID 'movieInfo' se vuelva visible después de la llamada Ajax simulada.
+
+5. **`it('places movie title in #movieInfo', function() { expect($('#movieInfo').text()).toContain('Casablanca'); });`**
+   - Se verifica que el contenido del elemento con ID 'movieInfo' contiene el texto 'Casablanca' después de la llamada Ajax simulada.
+
+En resumen, estas líneas establecen un entorno controlado para probar la interacción de JavaScript con Ajax y el DOM, asegurándose de que la respuesta esperada de la llamada Ajax se refleje correctamente en la interfaz de usuario.
 ### Verificación de la Función `setup`
 
 Verificamos que la función `setup` en `movie_popup.js` se ejecute correctamente. Cargamos la página y confirmamos que el elemento `#movieInfo` se agregue y esté oculto.
