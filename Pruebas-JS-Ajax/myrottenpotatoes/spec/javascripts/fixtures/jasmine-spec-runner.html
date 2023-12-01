@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html;charset=UTF-8" http-equiv="Content-Type"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Jasmine Specs</title>
+
+    <!-- Incluir jasmine-jquery desde node_modules -->
+    <script type="text/javascript" src="node_modules/jasmine-jquery/lib/jasmine-jquery.js"></script>
+
+    <!-- Contenido de la página -->
+
+    <!-- Configuración de Jasmine y ejecución de las pruebas -->
+    <script type="text/javascript">
+      // Configuración de Jasmine y ejecución de las pruebas
+      jasmine.getEnv().addReporter(new jasmine.HtmlReporter());
+      jasmine.getEnv().execute();
+    </script>
+  </body>
+</html>

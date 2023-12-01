@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "jquery": "^3.7.1"
+  },
+  "devDependencies": {
+    "jasmine-jquery": "^2.1.1"
+  }
+}

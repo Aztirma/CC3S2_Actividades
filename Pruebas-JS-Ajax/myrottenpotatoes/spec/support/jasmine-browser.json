@@ -1,0 +1,7 @@
+{
+    "srcDir": "app/assets/javascripts",
+    "specDir": "spec/javascripts",
+    "helpers": ["spec/support/**/*.js"],
+    "specFiles": ["**/*[Ss]pec.{js.coffee,js,coffee}"]
+  }
+  
